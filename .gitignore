@@ -1,2 +1,3 @@
 *.bmp
 pi-julia-set
+obj/
