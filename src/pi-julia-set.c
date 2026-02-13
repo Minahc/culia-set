@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <math.h>
 
+#include "argument.h"
 #include "bmp.h"
 #include "colors.h"
 
@@ -16,29 +17,6 @@
 #define SIZE (HEADER + IMAGESIZE) // header data + image data
 
 #define MAX_ITERATION 1000
-
-double to_double(char * str) {
-	uint32_t i;
-	double div = 1.0;
-
-	uint32_t out_int = 0;
-	uint32_t out_dec = 0;
-
-	char *decimal_place = strchr(str, '.');
-
-	out_int = atoi(str);
-
-	if (decimal_place) {
-		*decimal_place = 0;
-		out_dec = atoi(decimal_place + 1);
-
-		for (i = 0; i < strlen(decimal_place + 1); i++) {
-			div /= 10.0;
-		}
-	}
-
-	return out_int + out_dec * div;
-}
 
 double calc_r(double cx, double cy) {
 	return 0.5 * (sqrt(4 * sqrt(cx * cx + cy * cy) + 1) + 1);
@@ -72,13 +50,17 @@ int main(int argc, char ** argv) {
 		return 1;
 	}
 
-	if (argc < 2) {
-		printf("Error: Not enough arguments\n\nUSAGE: %s <cr> <ci>\n", argv[0]);
-		return 1;
+	struct arguments arguments;
+	int status = parse_args(argc, argv, &arguments);
+
+	if (status != 0) {
+		return status;
 	}
 
-	double cx = to_double(argv[1]);
-	double cy = to_double(argv[2]);
+	double cx = arguments.cx;
+	double cy = arguments.cy;
+
+	printf("%f, %f\n", cx, cy);
 	double R = calc_r(cx, cy);
 
 	// Calculate Julia set value for each pixel, convert value to hsl, then rgb and write to bitmap
