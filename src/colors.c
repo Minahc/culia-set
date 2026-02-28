@@ -4,6 +4,9 @@
 #include "colors.h"
 
 #define MODULO(a, b) ((a) - floor((a) / (b)) * (b))
+#define MIN(a, b) a < b ? a : b
+#define MAX(a, b) a > b ? a : b
+#define CLIP(a) MIN(MAX(a, 0.0), 1.0)
 
 void val_to_hsl(double val, uint32_t maxVal, double* h, double* s, double* l) {
 	//*h = 240.0;
@@ -11,7 +14,7 @@ void val_to_hsl(double val, uint32_t maxVal, double* h, double* s, double* l) {
 	//*l = pow(val / (double) maxVal, 0.1);
 	*h = 0.0;//(1.0 + 10 * (val / maxVal)) * 360;
 	*s = 0.6;
-	*l = (-val / maxVal) * 20.0 + 1.0;
+	*l = CLIP((-val / maxVal) * 20.0 + 1.0);
 	while (*h > 360) *h -= 360.0;
 }
 

@@ -1,7 +1,10 @@
+#include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
 
+#include "argument.h"
 #include "bmp.h"
 #include "colors.h"
 
@@ -13,12 +16,13 @@
 #define IMAGESIZE (ROWSIZE * HEIGHT) // size of image data
 #define SIZE (HEADER + IMAGESIZE) // header data + image data
 
-#define R 1.251105362355361781933320// escape radius of Julia set
 #define MAX_ITERATION 1000
 
-double julia(double zx, double zy) {
-	double cx = M_PI / 10.0;
-	double cy = 0.0;
+double calc_r(double cx, double cy) {
+	return 0.5 * (sqrt(4 * sqrt(cx * cx + cy * cy) + 1) + 1);
+}
+
+double julia(double zx, double zy, double cx, double cy, double R) {
 	double smooth_color = exp(-sqrt(zx * zx + zy * zy));
 
 	uint32_t iteration = 0;
@@ -35,7 +39,7 @@ double julia(double zx, double zy) {
 	return smooth_color;
 }
 
-int main() {
+int main(int argc, char ** argv) {
 	// Initialize bitmap
 	bmp_t bitmap;
 
@@ -46,12 +50,25 @@ int main() {
 		return 1;
 	}
 
+	struct arguments arguments;
+	int status = parse_args(argc, argv, &arguments);
+
+	if (status != 0) {
+		return status;
+	}
+
+	double cx = arguments.cx;
+	double cy = arguments.cy;
+
+	printf("%f, %f\n", cx, cy);
+	double R = calc_r(cx, cy);
+
 	// Calculate Julia set value for each pixel, convert value to hsl, then rgb and write to bitmap
 	for (uint32_t y = 0; y < HEIGHT; y++) {
 		double zy = (double)y / HEIGHT * 2 * R - R;
 		for (uint32_t x = 0; x < WIDTH; x++) {
 			double zx = (double)x / HEIGHT * 2 * R - R;
-			double val = julia(zx, zy);
+			double val = julia(zx, zy, cx, cy, R);
 
 			double h,s,l;
 			char r,g,b;
